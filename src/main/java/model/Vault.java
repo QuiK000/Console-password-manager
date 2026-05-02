@@ -13,4 +13,8 @@ public class Vault {
     public List<Entry> getEntries() {
         return entries.stream().toList();
     }
+
+    public void deleteEntry(Entry entry) {
+        entries.remove(entry);
+    }
 }
