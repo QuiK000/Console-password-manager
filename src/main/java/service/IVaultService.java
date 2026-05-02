@@ -9,7 +9,7 @@ public interface IVaultService {
 
     List<Entry> listEntries();
 
-    Entry getEnty(String id);
+    Entry getEntry(String id);
 
     void deleteEntry(String id);
 }
