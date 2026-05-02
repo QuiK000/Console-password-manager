@@ -1,6 +1,7 @@
 package cli;
 
 import cli.commands.AddCommand;
+import cli.commands.DeleteCommand;
 import cli.commands.ListCommand;
 import lombok.AllArgsConstructor;
 import model.Entry;
@@ -13,12 +14,16 @@ import java.util.UUID;
 public class CommandHandler {
     private final AddCommand addCommand;
     private final ListCommand listCommand;
+    private final DeleteCommand deleteCommand;
 
     public CommandResult handle(String input) {
         if (input == null || input.isBlank()) return CommandResult.CONTINUE;
 
         String[] parts = input.split("\\s+");
         String command = parts[0];
+        String arg = null;
+
+        if (parts.length > 1) arg = parts[1];
 
         switch (command) {
             case "add" -> {
@@ -66,11 +71,20 @@ public class CommandHandler {
                 return CommandResult.CONTINUE;
             }
             case "get" -> {
-                System.out.println("Getting entry...");
+                Entry entry = resolveEntry(arg);
+                if (entry == null) return CommandResult.CONTINUE;
+
+                System.out.println("Site: " + entry.getSite());
+                System.out.println("Login: " + entry.getLogin());
+                System.out.println("Password: " + entry.getPassword());
+
                 return CommandResult.CONTINUE;
             }
             case "delete" -> {
-                System.out.println("Deleting entry...");
+                Entry entry = resolveEntry(arg);
+                if (entry == null) return CommandResult.CONTINUE;
+
+                deleteCommand.removeEntry(entry);
                 return CommandResult.CONTINUE;
             }
             case "help" -> {
@@ -93,5 +107,33 @@ public class CommandHandler {
                 return CommandResult.CONTINUE;
             }
         }
+    }
+
+    private Integer resolveIndexArgument(String arg) {
+        if (arg == null) {
+            System.out.println("Please provide an index");
+            return null;
+        }
+
+        try {
+            int index = Integer.parseInt(arg);
+            return index - 1;
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid number");
+            return null;
+        }
+    }
+
+    private Entry resolveEntry(String arg) {
+        Integer index = resolveIndexArgument(arg);
+        if (index == null) return null;
+
+        var entries = listCommand.getEntries();
+        if (index < 0 || index >= entries.size()) {
+            System.out.println("Entry not found");
+            return null;
+        }
+
+        return entries.get(index);
     }
 }
