@@ -22,12 +22,12 @@ public class VaultServiceImpl implements IVaultService {
     }
 
     @Override
-    public Entry getEntry(String id) {
-        return null;
+    public Entry getEntry(Entry entry) {
+        return entry;
     }
 
     @Override
-    public void deleteEntry(String id) {
-
+    public void deleteEntry(Entry entry) {
+        vault.deleteEntry(entry);
     }
 }
