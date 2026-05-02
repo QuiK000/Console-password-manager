@@ -1,6 +1,7 @@
 import cli.CommandHandler;
 import cli.ConsoleUI;
 import cli.commands.AddCommand;
+import cli.commands.DeleteCommand;
 import cli.commands.ListCommand;
 import model.Vault;
 import service.impl.VaultServiceImpl;
@@ -12,8 +13,9 @@ public class Main {
 
         AddCommand addCommand = new AddCommand(vaultService);
         ListCommand listCommand = new ListCommand(vaultService);
+        DeleteCommand deleteCommand = new DeleteCommand(vaultService);
 
-        CommandHandler commandHandler = new CommandHandler(addCommand, listCommand);
+        CommandHandler commandHandler = new CommandHandler(addCommand, listCommand, deleteCommand);
         ConsoleUI console = new ConsoleUI(commandHandler);
 
         console.run();
