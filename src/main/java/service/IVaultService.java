@@ -5,6 +5,8 @@ import model.Entry;
 import java.util.List;
 
 public interface IVaultService {
+    void init();
+
     void addEntry(Entry entry);
 
     List<Entry> listEntries();
