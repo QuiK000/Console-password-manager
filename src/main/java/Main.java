@@ -5,11 +5,18 @@ import cli.commands.DeleteCommand;
 import cli.commands.ListCommand;
 import model.Vault;
 import service.impl.VaultServiceImpl;
+import storage.impl.FileStorage;
+import storage.impl.JsonVaultSerializer;
+
+import java.nio.file.Path;
 
 public class Main {
     public static void main(String[] args) {
-        Vault vault = new Vault();
-        VaultServiceImpl vaultService = new VaultServiceImpl(vault);
+        var storage = new FileStorage(Path.of("vault.json"));
+        var serializer = new JsonVaultSerializer();
+        var vaultService = new VaultServiceImpl(new Vault(), storage, serializer);
+
+        vaultService.init();
 
         AddCommand addCommand = new AddCommand(vaultService);
         ListCommand listCommand = new ListCommand(vaultService);
