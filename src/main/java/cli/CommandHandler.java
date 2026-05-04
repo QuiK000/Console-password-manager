@@ -2,6 +2,7 @@ package cli;
 
 import cli.commands.AddCommand;
 import cli.commands.DeleteCommand;
+import cli.commands.ExitCommand;
 import cli.commands.ListCommand;
 import lombok.AllArgsConstructor;
 import model.Entry;
@@ -15,6 +16,7 @@ public class CommandHandler {
     private final AddCommand addCommand;
     private final ListCommand listCommand;
     private final DeleteCommand deleteCommand;
+    private final ExitCommand exitCommand;
 
     public CommandResult handle(String input) {
         if (input == null || input.isBlank()) return CommandResult.CONTINUE;
@@ -100,7 +102,7 @@ public class CommandHandler {
             }
             case "exit" -> {
                 System.out.println("Bye!");
-                return CommandResult.EXIT;
+                return exitCommand.exit();
             }
             default -> {
                 System.out.println("Unknown command. Type 'help' for info.");
