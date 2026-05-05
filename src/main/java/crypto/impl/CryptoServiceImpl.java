@@ -1,6 +1,7 @@
 package crypto.impl;
 
 import crypto.ICryptoService;
+import crypto.exception.CryptoException;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -27,6 +28,8 @@ public class CryptoServiceImpl implements ICryptoService {
 
     @Override
     public SecretKey deriveKey(char[] password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        if (salt == null || salt.length < 16) throw new IllegalArgumentException("Salt must be at least 16 bytes long");
+
         PBEKeySpec spec = new PBEKeySpec(password, salt, PBKDF2_ITERATIONS, AES_KEY_BIT_LENGTH);
 
         try {
@@ -41,7 +44,7 @@ public class CryptoServiceImpl implements ICryptoService {
     }
 
     @Override
-    public byte[] encrypt(byte[] data, SecretKey key) {
+    public byte[] encrypt(byte[] data, SecretKey key) throws CryptoException {
         if (data == null) throw new IllegalArgumentException("Data must not be null");
 
         try {
@@ -61,12 +64,12 @@ public class CryptoServiceImpl implements ICryptoService {
 
             return combined;
         } catch (Exception e) {
-            throw new RuntimeException("Encryption failed", e);
+            throw new CryptoException("Encryption failed", e);
         }
     }
 
     @Override
-    public byte[] decrypt(byte[] data, SecretKey key) {
+    public byte[] decrypt(byte[] data, SecretKey key) throws CryptoException {
         if (data == null || data.length < GCM_IV_BYTE_LENGTH)
             throw new IllegalArgumentException("Invalid encrypted data");
 
@@ -79,7 +82,7 @@ public class CryptoServiceImpl implements ICryptoService {
             cipher.init(Cipher.DECRYPT_MODE, key, spec);
             return cipher.doFinal(data, GCM_IV_BYTE_LENGTH, data.length - GCM_IV_BYTE_LENGTH);
         } catch (Exception e) {
-            throw new RuntimeException("Decryption failed (wrong password or corrupted data)", e);
+            throw new CryptoException("Decryption failed (wrong password or corrupted data)", e);
         }
     }
 }
