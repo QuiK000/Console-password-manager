@@ -6,10 +6,13 @@ import cli.commands.ExitCommand;
 import cli.commands.ListCommand;
 import lombok.AllArgsConstructor;
 import model.Entry;
+import util.ConsoleUtils;
+import util.PasswordGenerator;
 
 import java.time.LocalDateTime;
 import java.util.Scanner;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @AllArgsConstructor
 public class CommandHandler {
@@ -37,8 +40,19 @@ public class CommandHandler {
                 System.out.print("login > ");
                 String login = scanner.nextLine().trim();
 
-                System.out.print("password > ");
+                System.out.print("password (or 'gen') > ");
                 String password = scanner.nextLine().trim();
+
+                boolean generated = false;
+
+                if (password.equalsIgnoreCase("gen") || password.isBlank()) {
+                    int length = ThreadLocalRandom.current().nextInt(12, 25);
+                    password = PasswordGenerator.generate(length);
+                    generated = true;
+
+                    System.out.println("Generated password: " + ConsoleUtils.mask(password));
+                    ConsoleUtils.copyToClipboard(password);
+                }
 
                 Entry entry = Entry.builder()
                         .id(UUID.randomUUID().toString())
@@ -51,6 +65,8 @@ public class CommandHandler {
                         .build();
 
                 addCommand.addEntry(entry);
+
+                if (!generated) System.out.println("Saved password: " + ConsoleUtils.mask(password));
                 return CommandResult.CONTINUE;
             }
             case "list" -> {

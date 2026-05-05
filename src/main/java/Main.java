@@ -4,29 +4,59 @@ import cli.commands.AddCommand;
 import cli.commands.DeleteCommand;
 import cli.commands.ExitCommand;
 import cli.commands.ListCommand;
-import model.Vault;
+import crypto.impl.CryptoServiceImpl;
+import service.impl.AuthServiceImpl;
 import service.impl.VaultServiceImpl;
 import storage.impl.FileStorage;
 import storage.impl.JsonVaultSerializer;
+import util.ConsoleUtils;
 
+import javax.crypto.SecretKey;
 import java.nio.file.Path;
+import java.security.SecureRandom;
+import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) {
         var storage = new FileStorage(Path.of("vault.json"));
         var serializer = new JsonVaultSerializer();
-        var vaultService = new VaultServiceImpl(new Vault(), storage, serializer);
+        var crypto = new CryptoServiceImpl();
 
-        vaultService.init();
+        var auth = new AuthServiceImpl(crypto, storage);
+        var vaultService = new VaultServiceImpl(storage, serializer, crypto);
 
-        AddCommand addCommand = new AddCommand(vaultService);
-        ListCommand listCommand = new ListCommand(vaultService);
-        DeleteCommand deleteCommand = new DeleteCommand(vaultService);
-        ExitCommand exitCommand = new ExitCommand();
+        try {
+            byte[] salt;
+            var key = (SecretKey) null;
 
-        CommandHandler commandHandler = new CommandHandler(addCommand, listCommand, deleteCommand, exitCommand);
-        ConsoleUI console = new ConsoleUI(commandHandler);
+            if (auth.isFirstRun()) {
+                char[] password = ConsoleUtils.readPassword("Create master password: ");
+                key = auth.setupMasterPassword(password);
 
-        console.run();
+                salt = new byte[16];
+                new SecureRandom().nextBytes(salt);
+            } else {
+                byte[] data = storage.load();
+                salt = Arrays.copyOfRange(data, 0, 16);
+
+                char[] password = ConsoleUtils.readPassword("Enter master password: ");
+                key = auth.login(password, salt);
+            }
+
+            vaultService.setSecurity(key, salt);
+            vaultService.init();
+        } catch (Exception e) {
+            System.out.println("Wrong password or corrupted vault");
+            return;
+        }
+
+        var handler = new CommandHandler(
+                new AddCommand(vaultService),
+                new ListCommand(vaultService),
+                new DeleteCommand(vaultService),
+                new ExitCommand()
+        );
+
+        new ConsoleUI(handler).run();
     }
 }
