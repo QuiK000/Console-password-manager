@@ -1,11 +1,13 @@
 package service;
 
 import javax.crypto.SecretKey;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 public interface IAuthService {
     boolean isFirstRun();
 
-    void setupMasterPassword(char[] password);
+    SecretKey setupMasterPassword(char[] password) throws NoSuchAlgorithmException, InvalidKeySpecException;
 
-    SecretKey login(char[] password);
+    SecretKey login(char[] password, byte[] existingSalt) throws NoSuchAlgorithmException, InvalidKeySpecException;
 }
