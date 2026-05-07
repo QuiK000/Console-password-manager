@@ -56,6 +56,19 @@ public class VaultServiceImpl implements IVaultService {
     }
 
     @Override
+    public void lock() {
+        if (vault != null) vault.clearAll();
+        vault = null;
+        key = null;
+        salt = null;
+    }
+
+    @Override
+    public boolean isLocked() {
+        return vault == null;
+    }
+
+    @Override
     public void addEntry(Entry entry) {
         vault.addEntry(entry);
         save();
@@ -69,6 +82,11 @@ public class VaultServiceImpl implements IVaultService {
     @Override
     public Entry getEntry(Entry entry) {
         return entry;
+    }
+
+    @Override
+    public void updateEntry(Entry entry) {
+        save();
     }
 
     @Override

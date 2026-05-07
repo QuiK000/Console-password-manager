@@ -4,6 +4,7 @@ import cli.commands.AddCommand;
 import cli.commands.DeleteCommand;
 import cli.commands.ExitCommand;
 import cli.commands.ListCommand;
+import cli.commands.UpdateCommand;
 import lombok.AllArgsConstructor;
 import model.Entry;
 import util.ConsoleUtils;
@@ -17,6 +18,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class CommandHandler {
     private final AddCommand addCommand;
     private final ListCommand listCommand;
+    private final UpdateCommand updateCommand;
     private final DeleteCommand deleteCommand;
     private final ExitCommand exitCommand;
 
@@ -96,6 +98,36 @@ public class CommandHandler {
                 ConsoleUtils.copyToClipboard(passStr);
                 return CommandResult.CONTINUE;
             }
+            case "update" -> {
+                Entry entry = resolveEntry(arg);
+                if (entry == null) return CommandResult.CONTINUE;
+
+                String rawInput = ConsoleUtils.readLine("New password (or 'gen') > ");
+                char[] newPassword;
+                boolean generated = false;
+
+                if (rawInput.equalsIgnoreCase("gen") || rawInput.isBlank()) {
+                    int length = ThreadLocalRandom.current().nextInt(12, 25);
+                    newPassword = PasswordGenerator.generate(length);
+                    generated = true;
+                } else {
+                    newPassword = rawInput.toCharArray();
+                }
+
+                entry.pushToHistory(entry.getPassword());
+                entry.setPassword(newPassword);
+                entry.setUpdatedAt(LocalDateTime.now());
+
+                updateCommand.update(entry);
+                System.out.println("Password updated.");
+
+                if (generated) {
+                    System.out.println("Generated: " + ConsoleUtils.mask(new String(newPassword)));
+                    ConsoleUtils.copyToClipboard(new String(newPassword));
+                }
+
+                return CommandResult.CONTINUE;
+            }
             case "delete" -> {
                 Entry entry = resolveEntry(arg);
                 if (entry == null) return CommandResult.CONTINUE;
@@ -103,14 +135,20 @@ public class CommandHandler {
                 deleteCommand.removeEntry(entry);
                 return CommandResult.CONTINUE;
             }
+            case "clear" -> {
+                ConsoleUtils.clearScreen();
+                return CommandResult.CONTINUE;
+            }
             case "help" -> {
                 System.out.println("""
                         Commands:
-                         add     - add new entry
-                         list    - list all entries
-                         get     - get entry by id
-                         delete  - delete entry
-                         exit    - exit program
+                         add        - add new entry
+                         list       - list all entries
+                         get [id]   - get entry by id (index)
+                         update [id]- update entry by id (index)
+                         delete [id]- delete entry by id (index)
+                         clear      - clear console screen
+                         exit       - exit program
                         """);
                 return CommandResult.CONTINUE;
             }
