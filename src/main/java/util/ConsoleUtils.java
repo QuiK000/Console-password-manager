@@ -5,9 +5,15 @@ import java.awt.datatransfer.StringSelection;
 import java.util.Scanner;
 
 public class ConsoleUtils {
-    private static final Scanner SCANNER = new Scanner(System.in);
+    public static final Scanner SCANNER = new Scanner(System.in);
+
+    public static String readLine(String prompt) {
+        System.out.print(prompt);
+        return SCANNER.nextLine().trim();
+    }
 
     public static char[] readPassword(String prompt) {
+        if (System.console() != null) return System.console().readPassword(prompt);
         System.out.print(prompt);
         return SCANNER.nextLine().toCharArray();
     }

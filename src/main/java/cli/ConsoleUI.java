@@ -1,6 +1,7 @@
 package cli;
 
 import lombok.AllArgsConstructor;
+import util.ConsoleUtils;
 
 import java.util.Scanner;
 
@@ -15,9 +16,9 @@ public class ConsoleUI {
         Scanner scanner = new Scanner(System.in);
         while (true) {
             System.out.print("> ");
-            if (!scanner.hasNextLine()) break;
+            if (!ConsoleUtils.SCANNER.hasNextLine()) break;
 
-            String input = scanner.nextLine().toLowerCase().trim();
+            String input = ConsoleUtils.SCANNER.nextLine().toLowerCase().trim();
             CommandResult result = commandHandler.handle(input);
 
             if (result == CommandResult.EXIT) break;
