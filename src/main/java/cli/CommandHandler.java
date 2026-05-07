@@ -33,17 +33,20 @@ public class CommandHandler {
             case "add" -> {
                 String site = ConsoleUtils.readLine("site > ");
                 String login = ConsoleUtils.readLine("login > ");
-                String password = ConsoleUtils.readLine("password (or 'gen') > ");
+                String rawInput = ConsoleUtils.readLine("password (or 'gen') > ");
 
+                char[] password;
                 boolean generated = false;
 
-                if (password.equalsIgnoreCase("gen") || password.isBlank()) {
+                if (rawInput.equalsIgnoreCase("gen") || rawInput.isBlank()) {
                     int length = ThreadLocalRandom.current().nextInt(12, 25);
                     password = PasswordGenerator.generate(length);
                     generated = true;
 
-                    System.out.println("Generated password: " + ConsoleUtils.mask(password));
-                    ConsoleUtils.copyToClipboard(password);
+                    System.out.println("Generated password: " + ConsoleUtils.mask(new String(password)));
+                    ConsoleUtils.copyToClipboard(new String(password));
+                } else {
+                    password = rawInput.toCharArray();
                 }
 
                 Entry entry = Entry.builder()
@@ -58,7 +61,7 @@ public class CommandHandler {
 
                 addCommand.addEntry(entry);
 
-                if (!generated) System.out.println("Saved password: " + ConsoleUtils.mask(password));
+                if (!generated) System.out.println("Saved password: " + ConsoleUtils.mask(new String(password)));
                 return CommandResult.CONTINUE;
             }
             case "list" -> {
@@ -86,8 +89,11 @@ public class CommandHandler {
 
                 System.out.println("Site: " + entry.getSite());
                 System.out.println("Login: " + entry.getLogin());
-                System.out.println("Password: " + entry.getPassword());
 
+                String passStr = new String(entry.getPassword());
+                System.out.println("Password: " + ConsoleUtils.mask(passStr));
+
+                ConsoleUtils.copyToClipboard(passStr);
                 return CommandResult.CONTINUE;
             }
             case "delete" -> {

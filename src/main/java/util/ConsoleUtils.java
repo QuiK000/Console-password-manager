@@ -1,8 +1,11 @@
 package util;
 
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ConsoleUtils {
     public static final Scanner SCANNER = new Scanner(System.in);
@@ -20,11 +23,18 @@ public class ConsoleUtils {
 
     public static void copyToClipboard(String text) {
         try {
-            Toolkit.getDefaultToolkit()
-                    .getSystemClipboard()
-                    .setContents(new StringSelection(text), null);
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(new StringSelection(text), null);
 
-            System.out.println("(Copied to clipboard)");
+            System.out.println("(Copied to clipboard. Will be cleared in 15 seconds)");
+            new Timer(true).schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    try {
+                        clipboard.setContents(new StringSelection(" "), null);
+                    } catch (Exception ignored) {}
+                }
+            }, 15000);
         } catch (Exception e) {
             System.out.println("(Clipboard not available)");
         }
