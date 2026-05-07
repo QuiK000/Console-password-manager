@@ -15,7 +15,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 
 public class CryptoServiceImpl implements ICryptoService {
-    private static final int PBKDF2_ITERATIONS = 65536;
+    private static final int PBKDF2_ITERATIONS = 600_000;
     private static final int AES_KEY_BIT_LENGTH = 256;
     private static final int GCM_TAG_BIT_LENGTH = 128;
     private static final int GCM_IV_BYTE_LENGTH = 12;

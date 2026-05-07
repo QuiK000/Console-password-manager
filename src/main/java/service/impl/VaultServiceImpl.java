@@ -74,6 +74,7 @@ public class VaultServiceImpl implements IVaultService {
     @Override
     public void deleteEntry(Entry entry) {
         vault.deleteEntry(entry);
+        entry.destroy();
         save();
     }
 

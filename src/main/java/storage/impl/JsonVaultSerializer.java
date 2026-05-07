@@ -11,7 +11,8 @@ import java.io.IOException;
 public class JsonVaultSerializer implements IVaultSerializer {
     private final ObjectMapper mapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .configure(SerializationFeature.WRITE_CHAR_ARRAYS_AS_JSON_ARRAYS, false);
 
     @Override
     public byte[] serialize(Vault vault) {
