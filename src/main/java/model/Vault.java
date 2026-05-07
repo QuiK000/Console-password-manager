@@ -17,4 +17,10 @@ public class Vault {
     public void deleteEntry(Entry entry) {
         entries.remove(entry);
     }
+
+    public void clearAll() {
+        for (Entry entry : entries) {
+            entry.destroy();
+        }
+    }
 }
