@@ -24,12 +24,14 @@ public class Main {
         var auth = new AuthServiceImpl(crypto, storage);
         var vaultService = new VaultServiceImpl(storage, serializer, crypto);
 
+        char[] password = null;
+
         try {
             byte[] salt;
             var key = (SecretKey) null;
 
             if (auth.isFirstRun()) {
-                char[] password = ConsoleUtils.readPassword("Create master password: ");
+                password = ConsoleUtils.readPassword("Create master password: ");
 
                 key = auth.setupMasterPassword(password);
                 salt = auth.getSalt();
@@ -37,7 +39,7 @@ public class Main {
                 byte[] data = storage.load();
                 salt = Arrays.copyOfRange(data, 0, 16);
 
-                char[] password = ConsoleUtils.readPassword("Enter master password: ");
+                password = ConsoleUtils.readPassword("Enter master password: ");
                 key = auth.login(password, salt);
             }
 
@@ -46,6 +48,10 @@ public class Main {
         } catch (Exception e) {
             System.out.println("Wrong password or corrupted vault");
             return;
+        } finally {
+            if (password != null) {
+                Arrays.fill(password, '\0');
+            }
         }
 
         var handler = new CommandHandler(
