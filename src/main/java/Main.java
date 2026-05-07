@@ -4,6 +4,7 @@ import cli.commands.AddCommand;
 import cli.commands.DeleteCommand;
 import cli.commands.ExitCommand;
 import cli.commands.ListCommand;
+import cli.commands.UpdateCommand;
 import crypto.impl.CryptoServiceImpl;
 import service.impl.AuthServiceImpl;
 import service.impl.VaultServiceImpl;
@@ -24,43 +25,52 @@ public class Main {
         var auth = new AuthServiceImpl(crypto, storage);
         var vaultService = new VaultServiceImpl(storage, serializer, crypto);
 
-        char[] password = null;
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            vaultService.lock();
+            System.out.println("\nMemory wiped securely before exit.");
+        }));
 
-        try {
-            byte[] salt;
-            var key = (SecretKey) null;
+        while (true) {
+            char[] password = null;
 
-            if (auth.isFirstRun()) {
-                password = ConsoleUtils.readPassword("Create master password: ");
+            try {
+                byte[] salt;
+                var key = (SecretKey) null;
 
-                key = auth.setupMasterPassword(password);
-                salt = auth.getSalt();
-            } else {
-                byte[] data = storage.load();
-                salt = Arrays.copyOfRange(data, 0, 16);
+                if (auth.isFirstRun()) {
+                    password = ConsoleUtils.readPassword("Create master password: ");
 
-                password = ConsoleUtils.readPassword("Enter master password: ");
-                key = auth.login(password, salt);
-            }
+                    key = auth.setupMasterPassword(password);
+                    salt = auth.getSalt();
+                } else {
+                    byte[] data = storage.load();
+                    salt = Arrays.copyOfRange(data, 0, 16);
 
-            vaultService.setSecurity(key, salt);
-            vaultService.init();
-        } catch (Exception e) {
-            System.out.println("Wrong password or corrupted vault");
-            return;
-        } finally {
-            if (password != null) {
-                Arrays.fill(password, '\0');
+                    password = ConsoleUtils.readPassword("Enter master password: ");
+                    key = auth.login(password, salt);
+                }
+
+                vaultService.setSecurity(key, salt);
+                vaultService.init();
+
+                var handler = new CommandHandler(
+                        new AddCommand(vaultService),
+                        new ListCommand(vaultService),
+                        new UpdateCommand(vaultService),
+                        new DeleteCommand(vaultService),
+                        new ExitCommand()
+                );
+
+                new ConsoleUI(handler, vaultService).run();
+                if (!vaultService.isLocked()) break;
+            } catch (Exception e) {
+                System.out.println("Wrong password or corrupted vault");
+                break;
+            } finally {
+                if (password != null) {
+                    Arrays.fill(password, '\0');
+                }
             }
         }
-
-        var handler = new CommandHandler(
-                new AddCommand(vaultService),
-                new ListCommand(vaultService),
-                new DeleteCommand(vaultService),
-                new ExitCommand()
-        );
-
-        new ConsoleUI(handler).run();
     }
 }
