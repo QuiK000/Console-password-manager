@@ -10,7 +10,6 @@ import util.ConsoleUtils;
 import util.PasswordGenerator;
 
 import java.time.LocalDateTime;
-import java.util.Scanner;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -32,16 +31,9 @@ public class CommandHandler {
 
         switch (command) {
             case "add" -> {
-                Scanner scanner = new Scanner(System.in);
-
-                System.out.print("site > ");
-                String site = scanner.nextLine().trim();
-
-                System.out.print("login > ");
-                String login = scanner.nextLine().trim();
-
-                System.out.print("password (or 'gen') > ");
-                String password = scanner.nextLine().trim();
+                String site = ConsoleUtils.readLine("site > ");
+                String login = ConsoleUtils.readLine("login > ");
+                String password = ConsoleUtils.readLine("password (or 'gen') > ");
 
                 boolean generated = false;
 

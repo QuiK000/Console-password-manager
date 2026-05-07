@@ -13,7 +13,6 @@ import util.ConsoleUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.file.Path;
-import java.security.SecureRandom;
 import java.util.Arrays;
 
 public class Main {
@@ -31,10 +30,9 @@ public class Main {
 
             if (auth.isFirstRun()) {
                 char[] password = ConsoleUtils.readPassword("Create master password: ");
-                key = auth.setupMasterPassword(password);
 
-                salt = new byte[16];
-                new SecureRandom().nextBytes(salt);
+                key = auth.setupMasterPassword(password);
+                salt = auth.getSalt();
             } else {
                 byte[] data = storage.load();
                 salt = Arrays.copyOfRange(data, 0, 16);
