@@ -10,4 +10,6 @@ public interface IAuthService {
     SecretKey setupMasterPassword(char[] password) throws NoSuchAlgorithmException, InvalidKeySpecException;
 
     SecretKey login(char[] password, byte[] existingSalt) throws NoSuchAlgorithmException, InvalidKeySpecException;
+
+    byte[] getSalt();
 }

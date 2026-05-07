@@ -43,4 +43,9 @@ public class AuthServiceImpl implements IAuthService {
         this.salt = existingSalt;
         return crypto.deriveKey(password, salt);
     }
+
+    @Override
+    public byte[] getSalt() {
+        return this.salt;
+    }
 }
