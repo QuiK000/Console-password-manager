@@ -26,6 +26,8 @@ public class Entry {
     @Setter
     private char[] password;
     private String notes;
+    @Setter
+    private String totpSecret;
     private LocalDateTime createdAt;
     @Setter
     private LocalDateTime updatedAt;

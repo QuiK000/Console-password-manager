@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import model.Entry;
 import util.ConsoleUtils;
 import util.PasswordGenerator;
+import util.TableUtils;
+import util.TotpUtils;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -35,6 +37,7 @@ public class CommandHandler {
             case "add" -> {
                 String site = ConsoleUtils.readLine("site > ");
                 String login = ConsoleUtils.readLine("login > ");
+                String totpSecret = ConsoleUtils.readLine("TOTP Secret (optional, press Enter to skip) > ");
                 String rawInput = ConsoleUtils.readLine("password (or 'gen') > ");
 
                 char[] password;
@@ -42,7 +45,9 @@ public class CommandHandler {
 
                 if (rawInput.equalsIgnoreCase("gen") || rawInput.isBlank()) {
                     int length = ThreadLocalRandom.current().nextInt(12, 25);
-                    password = PasswordGenerator.generate(length);
+                    boolean useSymbols = ConsoleUtils.readLine("Use symbols? (y/n) > ").equalsIgnoreCase("y");
+
+                    password = PasswordGenerator.generate(length, true, true, useSymbols);
                     generated = true;
 
                     System.out.println("Generated password: " + ConsoleUtils.mask(new String(password)));
@@ -57,6 +62,7 @@ public class CommandHandler {
                         .login(login)
                         .password(password)
                         .notes("")
+                        .totpSecret(totpSecret.isBlank() ? null : totpSecret)
                         .createdAt(LocalDateTime.now())
                         .updatedAt(null)
                         .build();
@@ -72,15 +78,8 @@ public class CommandHandler {
                 if (entries.isEmpty()) {
                     System.out.println("No entries found");
                     return CommandResult.CONTINUE;
-                }
-
-                int index = 1;
-
-                for (Entry entry : entries) {
-                    System.out.printf(
-                            "%d. %s (%s)%n",
-                            index++, entry.getSite(), entry.getLogin()
-                    );
+                } else {
+                    TableUtils.printEntries(entries);
                 }
 
                 return CommandResult.CONTINUE;
@@ -92,6 +91,9 @@ public class CommandHandler {
                 System.out.println("Site: " + entry.getSite());
                 System.out.println("Login: " + entry.getLogin());
 
+                if (entry.getTotpSecret() != null)
+                    System.out.println("2FA Code: " + TotpUtils.generateCode(entry.getTotpSecret()));
+
                 String passStr = new String(entry.getPassword());
                 System.out.println("Password: " + ConsoleUtils.mask(passStr));
 
@@ -102,30 +104,42 @@ public class CommandHandler {
                 Entry entry = resolveEntry(arg);
                 if (entry == null) return CommandResult.CONTINUE;
 
-                String rawInput = ConsoleUtils.readLine("New password (or 'gen') > ");
-                char[] newPassword;
-                boolean generated = false;
-
-                if (rawInput.equalsIgnoreCase("gen") || rawInput.isBlank()) {
-                    int length = ThreadLocalRandom.current().nextInt(12, 25);
-                    newPassword = PasswordGenerator.generate(length);
-                    generated = true;
-                } else {
-                    newPassword = rawInput.toCharArray();
+                String updateTotp = ConsoleUtils.readLine("Update TOTP Secret? (y/n) > ");
+                if (updateTotp.equalsIgnoreCase("y")) {
+                    String newSecret = ConsoleUtils.readLine("New TOTP Secret (or leave empty to remove) > ");
+                    entry.setTotpSecret(newSecret.isBlank() ? null : newSecret);
                 }
 
-                entry.pushToHistory(entry.getPassword());
-                entry.setPassword(newPassword);
+                String rawInput = ConsoleUtils.readLine("New password (or 'gen', or press Enter to keep current) > ");
+
+                if (!rawInput.isBlank()) {
+                    char[] newPassword;
+                    boolean generated = false;
+
+                    if (rawInput.equalsIgnoreCase("gen")) {
+                        String lenInput = ConsoleUtils.readLine("Length (default 16) > ");
+                        int length = lenInput.isBlank() ? 16 : Integer.parseInt(lenInput);
+                        boolean useSymbols = ConsoleUtils.readLine("Use symbols? (y/n) > ").equalsIgnoreCase("y");
+
+                        newPassword = PasswordGenerator.generate(length, true, true, useSymbols);
+                        generated = true;
+                    } else {
+                        newPassword = rawInput.toCharArray();
+                    }
+
+                    entry.pushToHistory(entry.getPassword());
+                    entry.setPassword(newPassword);
+
+                    if (generated) {
+                        System.out.println("Generated: " + ConsoleUtils.mask(new String(newPassword)));
+                        ConsoleUtils.copyToClipboard(new String(newPassword));
+                    }
+                }
+
                 entry.setUpdatedAt(LocalDateTime.now());
-
                 updateCommand.update(entry);
-                System.out.println("Password updated.");
 
-                if (generated) {
-                    System.out.println("Generated: " + ConsoleUtils.mask(new String(newPassword)));
-                    ConsoleUtils.copyToClipboard(new String(newPassword));
-                }
-
+                System.out.println("Entry updated successfully.");
                 return CommandResult.CONTINUE;
             }
             case "delete" -> {
