@@ -1,5 +1,6 @@
 import cli.CommandHandler;
 import cli.ConsoleUI;
+import cli.SessionSettings;
 import cli.commands.AddCommand;
 import cli.commands.DeleteCommand;
 import cli.commands.ExitCommand;
@@ -24,6 +25,7 @@ public class Main {
 
         var auth = new AuthServiceImpl(crypto, storage);
         var vaultService = new VaultServiceImpl(storage, serializer, crypto);
+        var sessionSettings = new SessionSettings();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             vaultService.lock();
@@ -58,10 +60,12 @@ public class Main {
                         new ListCommand(vaultService),
                         new UpdateCommand(vaultService),
                         new DeleteCommand(vaultService),
-                        new ExitCommand()
+                        new ExitCommand(),
+                        vaultService,
+                        sessionSettings
                 );
 
-                new ConsoleUI(handler, vaultService).run();
+                new ConsoleUI(handler, vaultService, sessionSettings).run();
                 if (!vaultService.isLocked()) break;
             } catch (Exception e) {
                 System.out.println("Wrong password or corrupted vault");

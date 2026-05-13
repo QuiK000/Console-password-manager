@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ConsoleUI {
     private final CommandHandler commandHandler;
     private final IVaultService vaultService;
+    private final SessionSettings sessionSettings;
 
     public void run() {
         ConsoleUtils.clearScreen();
@@ -23,10 +24,12 @@ public class ConsoleUI {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                if (!vaultService.isLocked() && System.currentTimeMillis() - lastActivity.get() > 300_000) {
+                long timeoutMillis = sessionSettings.getAutoLockTimeoutMillis();
+                if (!vaultService.isLocked() && System.currentTimeMillis() - lastActivity.get() > timeoutMillis) {
                     vaultService.lock();
                     ConsoleUtils.clearScreen();
-                    System.out.println("\n[!] Vault auto-locked due to 5 minutes of inactivity.");
+
+                    System.out.println("\n[!] Vault auto-locked due to " + sessionSettings.describeAutoLockTimeout() + " of inactivity.");
                     System.out.print("[!] Press ENTER to log in again.\n> ");
                 }
             }
@@ -49,6 +52,11 @@ public class ConsoleUI {
             if (result == CommandResult.EXIT) {
                 timer.cancel();
                 break;
+            }
+
+            if (result == CommandResult.LOCK || vaultService.isLocked()) {
+                timer.cancel();
+                return;
             }
         }
     }
