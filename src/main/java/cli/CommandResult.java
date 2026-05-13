@@ -1,5 +1,5 @@
 package cli;
 
 public enum CommandResult {
-    CONTINUE, EXIT
+    CONTINUE, EXIT, LOCK
 }

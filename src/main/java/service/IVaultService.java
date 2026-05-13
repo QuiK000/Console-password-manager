@@ -2,6 +2,7 @@ package service;
 
 import model.Entry;
 
+import java.nio.file.Path;
 import java.util.List;
 
 public interface IVaultService {
@@ -20,4 +21,10 @@ public interface IVaultService {
     void updateEntry(Entry entry);
 
     void deleteEntry(Entry entry);
+
+    void changeMasterPassword(char[] currentPassword, char[] newPassword);
+
+    void backup(Path backupPath);
+
+    void restore(Path backupPath, char[] masterPassword);
 }
