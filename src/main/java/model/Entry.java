@@ -21,10 +21,13 @@ import java.util.List;
 @EqualsAndHashCode(of = "id")
 public class Entry {
     private String id;
+    @Setter
     private String site;
+    @Setter
     private String login;
     @Setter
     private char[] password;
+    @Setter
     private String notes;
     @Setter
     private String totpSecret;
