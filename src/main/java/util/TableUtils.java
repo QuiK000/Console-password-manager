@@ -6,18 +6,18 @@ import model.Entry;
 import java.util.List;
 
 public class TableUtils {
-    public static void printEntries(List<Entry> entries) {
+    public static void printEntries(List<Entry> entries, List<Entry> sourceEntries) {
         AsciiTable at = new AsciiTable();
 
         at.addRule();
-        at.addRow("ID", "Site", "Login", "TOTP Code");
+        at.addRow("ID", "Site", "Login", "TOTP Code", "Notes");
         at.addRule();
 
-        int index = 1;
         for (Entry entry : entries) {
             String totp = entry.getTotpSecret() != null ? TotpUtils.generateCode(entry.getTotpSecret()) : "N/A";
+            int index = sourceEntries.indexOf(entry) + 1;
 
-            at.addRow(index++, entry.getSite(), entry.getLogin(), totp);
+            at.addRow(index, entry.getSite(), entry.getLogin(), totp, entry.getNotes());
             at.addRule();
         }
 
