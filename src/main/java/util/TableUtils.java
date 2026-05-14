@@ -14,10 +14,14 @@ public class TableUtils {
         at.addRule();
 
         for (Entry entry : entries) {
+            String site = entry.getSite() != null ? entry.getSite() : "N/A";
+            String login = entry.getLogin() != null ? entry.getLogin() : "N/A";
             String totp = entry.getTotpSecret() != null ? TotpUtils.generateCode(entry.getTotpSecret()) : "N/A";
+            String notes = entry.getNotes() != null ? entry.getNotes() : "N/A";
+
             int index = sourceEntries.indexOf(entry) + 1;
 
-            at.addRow(index, entry.getSite(), entry.getLogin(), totp, entry.getNotes());
+            at.addRow(index, site, login, totp, notes);
             at.addRule();
         }
 
