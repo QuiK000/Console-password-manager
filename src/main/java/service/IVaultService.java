@@ -16,8 +16,6 @@ public interface IVaultService {
 
     List<Entry> listEntries();
 
-    Entry getEntry(Entry entry);
-
     void updateEntry(Entry entry);
 
     void deleteEntry(Entry entry);

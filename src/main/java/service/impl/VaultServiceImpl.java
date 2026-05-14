@@ -84,11 +84,6 @@ public class VaultServiceImpl implements IVaultService {
     }
 
     @Override
-    public Entry getEntry(Entry entry) {
-        return entry;
-    }
-
-    @Override
     public void updateEntry(Entry entry) {
         save();
     }
