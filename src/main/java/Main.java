@@ -41,7 +41,6 @@ public class Main {
 
                 if (auth.isFirstRun()) {
                     password = ConsoleUtils.readPassword("Create master password: ");
-
                     key = auth.setupMasterPassword(password);
                     salt = auth.getSalt();
                 } else {
@@ -54,7 +53,15 @@ public class Main {
 
                 vaultService.setSecurity(key, salt);
                 vaultService.init();
-
+            } catch (Exception e) {
+                System.out.println("Wrong password or corrupted vault");
+                break;
+            } finally {
+                if (password != null) {
+                    Arrays.fill(password, '\0');
+                }
+            }
+            try {
                 var handler = new CommandHandler(
                         new AddCommand(vaultService),
                         new ListCommand(vaultService),
@@ -68,12 +75,8 @@ public class Main {
                 new ConsoleUI(handler, vaultService, sessionSettings).run();
                 if (!vaultService.isLocked()) break;
             } catch (Exception e) {
-                System.out.println("Wrong password or corrupted vault");
+                System.out.println("\n[!] Application crashed: " + e.getMessage());
                 break;
-            } finally {
-                if (password != null) {
-                    Arrays.fill(password, '\0');
-                }
             }
         }
     }

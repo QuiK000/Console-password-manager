@@ -39,7 +39,6 @@ public class CryptoServiceImpl implements ICryptoService {
             return new SecretKeySpec(keyBytes, AES_ALGORITHM);
         } finally {
             spec.clearPassword();
-            Arrays.fill(password, '\0');
         }
     }
 

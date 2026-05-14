@@ -39,7 +39,7 @@ public class ConsoleUI {
             System.out.print("> ");
             if (!ConsoleUtils.SCANNER.hasNextLine()) break;
 
-            String input = ConsoleUtils.SCANNER.nextLine().toLowerCase().trim();
+            String input = ConsoleUtils.SCANNER.nextLine().trim();
             lastActivity.set(System.currentTimeMillis());
 
             if (vaultService.isLocked()) {
