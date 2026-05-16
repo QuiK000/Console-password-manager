@@ -29,7 +29,6 @@ public class CryptoServiceImpl implements ICryptoService {
     @Override
     public SecretKey deriveKey(char[] password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
         if (salt == null || salt.length < 16) throw new IllegalArgumentException("Salt must be at least 16 bytes long");
-
         PBEKeySpec spec = new PBEKeySpec(password, salt, PBKDF2_ITERATIONS, AES_KEY_BIT_LENGTH);
 
         try {
